@@ -24,20 +24,27 @@ module VagrantPlugins
           })
 
           # create user account
+          if 'FreeBSD' == @machine.guest.name
+            useradd_command = "pw useradd -n #{user} -d /usr/home/#{user} -s /bin/tcsh -m -G wheel -h -"
+          else
+            useradd_command = "useradd -m -s /bin/bash #{user}"
+          end
           @machine.communicate.execute(<<-BASH)
             if ! (grep ^#{user}: /etc/passwd); then
-              useradd -m -s /bin/bash #{user};
+              #{useradd_command};
             fi
           BASH
 
-          # grant user sudo access with no password requirement
-          @machine.communicate.execute(<<-BASH)
-            if ! (grep #{user} /etc/sudoers); then
-              echo "#{user} ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers;
-            else
-              sed -i -e "/#{user}/ s/=.*/=(ALL:ALL) NOPASSWD: ALL/" /etc/sudoers;
-            fi
-          BASH
+          # grant user sudo access with no password requirement (wheel membership is sufficient on FreeBSD)
+          if 'FreeBSD' != @machine.guest.name
+            @machine.communicate.execute(<<-BASH)
+              if ! (grep #{user} /etc/sudoers); then
+                echo "#{user} ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers;
+              else
+                sed -i -e "/#{user}/ s/=.*/=(ALL:ALL) NOPASSWD: ALL/" /etc/sudoers;
+              fi
+            BASH
+          end
 
           # create the .ssh directory in the users home
           @machine.communicate.execute("su #{user} -c 'mkdir -p ~/.ssh'")
