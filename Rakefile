@@ -4,9 +4,10 @@ namespace :gem do
   Bundler::GemHelper.install_tasks
 end
 
-task :test do
-  result = sh 'bash test/test.sh'
-
+task :test, :vm do |t, args|
+  vm = args[:vm] || :all
+  puts "Testing #{vm}"
+  result = sh "bash test/test.sh #{vm}"
   if result
     puts 'Success!'
   else

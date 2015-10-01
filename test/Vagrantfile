@@ -23,19 +23,19 @@ Vagrant.configure('2') do |config|
     chef.add_recipe 'test'
   end
 
-  config.vm.define :freebsd do |freebsd|
+  config.vm.define :freebsd, autostart: false do |freebsd|
     freebsd.vm.provider :digital_ocean do |provider|
       provider.image = 'freebsd-10-1-x64'
     end
   end
 
-  config.vm.define :ubuntu do |ubuntu|
+  config.vm.define :ubuntu, autostart: false do |ubuntu|
     ubuntu.vm.provider :digital_ocean do |provider|
       provider.image = 'ubuntu-14-04-x64'
     end
   end
 
-  config.vm.define :centos do |centos|
+  config.vm.define :centos, autostart: false do |centos|
     centos.vm.provider :digital_ocean do |provider|
       provider.image = 'centos-6-5-x64'
     end
